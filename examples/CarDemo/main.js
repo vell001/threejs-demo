@@ -44,6 +44,8 @@ function init() {
 			startPitch = cameraPitchAngle;
 		}
 		isDown = true;
+		event.preventDefault();
+		event.stopPropagation();
 	});
 	domDocument.addEventListener("touchmove", function (event) {
 		if(!isDown) {
@@ -58,16 +60,20 @@ function init() {
 			distanceDouble = Math.sqrt(
 				Math.pow(event.touches[0].clientX - event.touches[1].clientX, 2)
 				+ Math.pow(event.touches[0].clientY - event.touches[1].clientY, 2));
-			cameraDistance = startCameraDistance + (distanceDouble - startDistanceDouble) / 10;
+			cameraDistance = startCameraDistance - (distanceDouble - startDistanceDouble) / 10;
 		} else {
 			distanceY = event.touches[0].clientY - startY;
 			distanceX = event.touches[0].clientX - startX;
 			cameraYawAngle = startYaw - distanceX / 1000 * Math.PI;
 			cameraPitchAngle = startPitch + distanceY / 1000 * Math.PI;
 		}
+		event.preventDefault();
+		event.stopPropagation();
 	});
 	domDocument.addEventListener("touchend", function (event) {
 		isDown = false;
+		event.preventDefault();
+		event.stopPropagation();
 	});
 }
 

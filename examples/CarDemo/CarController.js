@@ -29,6 +29,8 @@ CarController.prototype.init = function (car) {
 	document.getElementById("wheel").addEventListener("touchstart", function (event) {
 		startX=event.touches[0].clientX;
 		isDown = true;
+		event.preventDefault();
+		event.stopPropagation();
 	});
 	document.getElementById("wheel").addEventListener("touchmove", function (event) {
 		if(!isDown) {
@@ -36,6 +38,8 @@ CarController.prototype.init = function (car) {
 		}
 		distance = event.touches[0].clientX - startX;
 		document.getElementById("wheel").style.transform = 'rotate('+distance+'deg)';
+		event.preventDefault();
+		event.stopPropagation();
 		scope.car.wheelYaw = distance/6/180 * Math.PI;
 	});
 	document.getElementById("wheel").addEventListener("touchend", function (event) {
@@ -43,6 +47,8 @@ CarController.prototype.init = function (car) {
 		distance = 0;
 		scope.car.wheelYaw = 0;
 		document.getElementById("wheel").style.transform = 'rotate('+distance+'deg)';
+		event.preventDefault();
+		event.stopPropagation();
 	});
 	}
 	// 油门
@@ -52,6 +58,8 @@ CarController.prototype.init = function (car) {
 			startY = event.touches[0].clientY;
 			t = document.getElementById("throttle").offsetTop;
 			isDown = true;
+			event.preventDefault();
+			event.stopPropagation();
 		});
 		document.getElementById("throttle").addEventListener("touchmove", function (event) {
 			if(!isDown) {
@@ -60,13 +68,17 @@ CarController.prototype.init = function (car) {
 			distance = event.touches[0].clientY - startY;
 			let ny = t+distance;
 			document.getElementById("throttle").style.top = ny+"px";
-			scope.car.speed = distance / 50;
+			scope.car.speed = -distance / 30;
+			event.preventDefault();
+			event.stopPropagation();
 		});
 		document.getElementById("throttle").addEventListener("touchend", function (event) {
 			isDown = false;
 			distance = 0;
 			scope.car.speed = 0;
 			document.getElementById("throttle").style.top = t+"px";
+			event.preventDefault();
+			event.stopPropagation();
 		});
 	}
 
