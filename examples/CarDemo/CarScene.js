@@ -85,7 +85,9 @@ var CarScene = function (domElement) {
 	groundTexture.anisotropy = 16;
 	groundTexture.encoding = THREE.sRGBEncoding;
 
-	const groundMaterial = new THREE.MeshLambertMaterial( { map: groundTexture } );
+	const groundMaterial = new THREE.MeshLambertMaterial( { map: groundTexture ,
+		side: THREE.DoubleSide,
+	} );
 
 	let mesh = new THREE.Mesh( new THREE.PlaneGeometry( 20000, 20000 ), groundMaterial );
 	mesh.receiveShadow = true;

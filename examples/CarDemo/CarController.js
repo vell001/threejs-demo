@@ -25,9 +25,10 @@ CarController.prototype.init = function (car) {
 
 	document.addEventListener('keydown', handleKeyDown, false);
 	{
-	let startX,distance,isDown = false;
+	let startX,startDistance,distance=0,isDown = false;
 	document.getElementById("wheel").addEventListener("touchstart", function (event) {
 		startX=event.targetTouches[0].clientX;
+		startDistance = distance;
 		isDown = true;
 		event.preventDefault();
 		event.stopPropagation();
@@ -36,17 +37,14 @@ CarController.prototype.init = function (car) {
 		if(!isDown) {
 			return;
 		}
-		distance = event.targetTouches[0].clientX - startX;
+		distance = startDistance + (event.targetTouches[0].clientX - startX);
 		document.getElementById("wheel").style.transform = 'rotate('+distance+'deg)';
 		event.preventDefault();
 		event.stopPropagation();
-		scope.car.wheelYaw = distance/3/180 * Math.PI;
+		scope.car.wheelYaw = distance/5/180 * Math.PI;
 	});
 	document.getElementById("wheel").addEventListener("touchend", function (event) {
 		isDown = false;
-		distance = 0;
-		scope.car.wheelYaw = 0;
-		document.getElementById("wheel").style.transform = 'rotate('+distance+'deg)';
 		event.preventDefault();
 		event.stopPropagation();
 	});
