@@ -50,28 +50,7 @@ var ARCar = function (param) {
 		];
 
 		carModel.getObjectByName('body').onBeforeRender = function () {
-			const timeSec = performance.now() / 1000;
-			if (scope.lastRenderTimeSec < 0) {
-				scope.lastRenderTimeSec = timeSec;
-				return;
-			}
-
-			let timeDelta = timeSec - scope.lastRenderTimeSec;
-			let distance = scope.speed * timeDelta;
-			let rotA = distance / scope.wheelDiameter;
-			scope.lastWheelRotAngle -= rotA;
-			let q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), scope.lastWheelRotAngle);
-			let q2 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -scope.yaw);
-			let q3 = q2.multiply(q);
-			for (let i = 0; scope.wheels !== undefined && i < scope.wheels.length; i++) {
-				if (i < 2) {
-					scope.wheels[i].quaternion.copy(q3);
-				} else {
-					scope.wheels[i].rotation.x -= rotA;
-				}
-			}
-
-			scope.lastRenderTimeSec = timeSec;
+			scope.onBeforeRender(scope);
 		}
 
 		// shadow
@@ -84,17 +63,27 @@ var ARCar = function (param) {
 		mesh.rotation.x = -Math.PI / 2;
 		mesh.renderOrder = 2;
 		carModel.add(mesh);
+		carModel.rotation.x = Math.PI / 2;
+		carModel.position.z = 0.1
 		scope.add(carModel);
 
-		// scope.wheels[0].rotateOnAxis(new THREE.Vector3(1, 0, 0), -scope.angle);
-		// scope.wheels[1].rotateOnAxis(new THREE.Vector3(1, 0, 0), -scope.angle);
+		scope.lr = scope.wheels[0].position.distanceTo(scope.wheels[2].position)/2; // 中心点到后轴距离
+		scope.lf = scope.wheels[0].position.distanceTo(scope.wheels[2].position)/2; // 中心点到前轴距离
 	});
 
-	this.speed = 2; // m/s
-	this.yaw = Math.PI / 4; // rad
-	this.wheelDiameter = 0.6;
+	this.lr = 2.5; // 中心点到后轴距离
+	this.lf = 2.5; // 中心点到前轴距离
+	this.speed = 0; // m/s
+	this.wheelYaw = 0; // rad
+	this.carYaw = 0; // rad
+	this.wheelDiameter = 0.4;
 	this.lastRenderTimeSec = -1;
 	this.lastWheelRotAngle = 0;
+	this.baseQuaternion = null;
+	this.upAxis = new THREE.Vector3(0,0,1);
+	this.forwardAxis = new THREE.Vector3(0,1,0);
+	this.rightAxis = new THREE.Vector3(1,0,0);
+	this.onBeforeRender = function(car) {};
 
 }
 THREE.Object3D.prototype.rotateAroundWorldAxis = function () {

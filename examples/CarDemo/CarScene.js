@@ -5,6 +5,7 @@ import {Sky} from "../jsm/objects/Sky.js";
 
 var CarScene = function (domElement) {
 	var scope = this;
+	this.domElement = domElement;
 	this.scene = new THREE.Scene();
 	this.scene.background = new THREE.Color(0xcce0ff);
 	this.scene.fog = new THREE.Fog( 0xcce0ff, 60, 100 );
@@ -91,9 +92,9 @@ var CarScene = function (domElement) {
 	mesh.position.z = -0.1;
 	this.scene.add( mesh );
 
-	const controls = new OrbitControls(this.camera, this.renderer.domElement);
-	controls.target.set(0, 0.5, 0);
-	controls.update();
+	// this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+	// this.controls.target.set(0, 0.5, 0);
+	// this.controls.update();
 
 	var onWindowResize = function() {
 		scope.camera.aspect = window.innerWidth / window.innerHeight;

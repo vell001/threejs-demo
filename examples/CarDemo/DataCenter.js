@@ -63,7 +63,7 @@ DataCenter.prototype.getRelativePos = function (pos) {
 
 DataCenter.prototype.init = function () {
 	this.car = new ARCar();
-	this.carScene = new CarScene(document.body);
+	this.carScene = new CarScene(document.getElementById("scene_3d"));
 	this.scene = this.carScene.scene;
 	this.loadMaterials();
 };
