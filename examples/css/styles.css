@@ -51,3 +51,20 @@ html,body{
 	width: 80px;
 	/*background: #FF0000;*/
 }
+
+#rearview_left{
+	position: fixed;
+
+	left: 0;
+	width: 45%;
+	height: 20%;
+	background: #FF0000;
+}
+
+#rearview_right{
+	position: fixed;
+	width: 45%;
+	height: 20%;
+	right: 0;
+	/*background: #FF0000;*/
+}

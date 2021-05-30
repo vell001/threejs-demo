@@ -99,14 +99,28 @@ function render() {
 	backV.applyAxisAngle(dataCenter.car.upAxis, cameraYawAngle);
 	backV.multiplyScalar(cameraDistance);
 	backV.applyQuaternion(dataCenter.car.quaternion);
-	let carPos = dataCenter.car.position.clone();
-	let carMatrix = dataCenter.car.matrix.clone();
 
 	dataCenter.carScene.camera.position.copy(dataCenter.car.position.clone().add(backV));
 	dataCenter.carScene.camera.up.copy( dataCenter.car.upAxis);
 	dataCenter.carScene.camera.lookAt(dataCenter.car.position);
 
 	// dataCenter.carScene.controls.update();
+
+	// 处理后视镜位置
+	let rearViewPosLeft = new THREE.Vector3(-1.1,0.4,1);
+	let rearViewLookAtLeft = rearViewPosLeft.clone().add(new THREE.Vector3(-0.2,-1,-0.05)).applyQuaternion(dataCenter.car.quaternion);
+	rearViewPosLeft.applyQuaternion(dataCenter.car.quaternion);
+	dataCenter.carScene.rearviewCameraLeft.position.copy(dataCenter.car.position.clone().add(rearViewPosLeft));
+	dataCenter.carScene.rearviewCameraLeft.lookAt(dataCenter.car.position.clone().add(rearViewLookAtLeft));
+	dataCenter.carScene.rearviewCameraLeft.up.copy( dataCenter.car.upAxis);
+
+
+	let rearViewPosRight = new THREE.Vector3(1.1,0.4,1);
+	let rearViewLookAtRight = rearViewPosRight.clone().add(new THREE.Vector3(0.2,-1,-0.05)).applyQuaternion(dataCenter.car.quaternion);
+	rearViewPosRight.applyQuaternion(dataCenter.car.quaternion);
+	dataCenter.carScene.rearviewCameraRight.position.copy(dataCenter.car.position.clone().add(rearViewPosRight));
+	dataCenter.carScene.rearviewCameraRight.lookAt(dataCenter.car.position.clone().add(rearViewLookAtRight));
+	dataCenter.carScene.rearviewCameraRight.up.copy( dataCenter.car.upAxis);
 }
 
 // When the page has loaded, run init();

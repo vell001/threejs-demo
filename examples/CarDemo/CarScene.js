@@ -48,12 +48,41 @@ var CarScene = function (domElement) {
 	this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
 	this.renderer.toneMappingExposure = 0.85;
 
+	this.rearviewDomLeft = document.getElementById("rearview_left");
+	this.rearviewDomRight = document.getElementById("rearview_right");
+	this.rearviewCameraLeft = new THREE.PerspectiveCamera(60, this.rearviewDomLeft.clientWidth / this.rearviewDomLeft.clientHeight, 0.1, 1000);
+	this.rearviewCameraRight = new THREE.PerspectiveCamera(60, this.rearviewDomRight.clientWidth / this.rearviewDomRight.clientHeight, 0.1, 1000);
+
+	this.rearviewRendererLeft = new THREE.WebGLRenderer({ antialias: true });
+	this.rearviewRendererLeft.setPixelRatio(window.devicePixelRatio);
+	this.rearviewRendererLeft.outputEncoding = THREE.sRGBEncoding;
+	this.rearviewRendererLeft.toneMapping = THREE.ACESFilmicToneMapping;
+	this.rearviewRendererLeft.toneMappingExposure = 0.85;
+
+	this.rearviewRendererRight = new THREE.WebGLRenderer({ antialias: true });
+	this.rearviewRendererRight.setPixelRatio(window.devicePixelRatio);
+	this.rearviewRendererRight.outputEncoding = THREE.sRGBEncoding;
+	this.rearviewRendererRight.toneMapping = THREE.ACESFilmicToneMapping;
+	this.rearviewRendererRight.toneMappingExposure = 0.85;
+
+	this.rearviewRendererLeft.setSize(this.rearviewDomLeft.clientWidth , this.rearviewDomLeft.clientHeight);
+	this.rearviewRendererRight.setSize(this.rearviewDomRight.clientWidth , this.rearviewDomRight.clientHeight);
+	this.rearviewRendererLeft.setAnimationLoop(function() {
+		scope.rearviewRendererLeft.render(scope.scene, scope.rearviewCameraLeft);
+	});
+	this.rearviewRendererRight.setAnimationLoop(function() {
+		scope.rearviewRendererRight.render(scope.scene, scope.rearviewCameraRight);
+	});
+	this.rearviewDomLeft.appendChild(this.rearviewRendererLeft.domElement);
+	this.rearviewDomRight.appendChild(this.rearviewRendererRight.domElement);
+
 	// 渲染前刷新元素信息
 	this.updateView = function() {};
 	this.renderer.setAnimationLoop(function() {
 		scope.updateView();
 		scope.renderer.render(scope.scene, scope.camera);
 	});
+
 	domElement.appendChild(this.renderer.domElement);
 
 	const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
@@ -103,6 +132,13 @@ var CarScene = function (domElement) {
 		scope.camera.updateProjectionMatrix();
 
 		scope.renderer.setSize(window.innerWidth, window.innerHeight);
+
+		scope.rearviewCameraLeft.aspect = scope.rearviewDomLeft.clientWidth / scope.rearviewDomLeft.clientHeight;
+		scope.rearviewCameraLeft.updateProjectionMatrix();
+		scope.rearviewCameraRight.aspect = scope.rearviewDomRight.clientWidth / scope.rearviewDomRight.clientHeight;
+		scope.rearviewCameraRight.updateProjectionMatrix();
+		scope.rearviewRendererLeft.setSize(scope.rearviewDomLeft.clientWidth , scope.rearviewDomLeft.clientHeight);
+		scope.rearviewRendererRight.setSize(scope.rearviewDomRight.clientWidth , scope.rearviewDomRight.clientHeight);
 	};
 	window.addEventListener('resize', onWindowResize);
 }
