@@ -55,6 +55,7 @@ var ARCar = function (param) {
 
 		// shadow
 		let mesh = new THREE.Mesh(
+			// new THREE.BoxGeometry(2,5, 1),
 			new THREE.PlaneGeometry(0.655 * 4, 1.3 * 4),
 			new THREE.MeshBasicMaterial({
 				map: shadow, blending: THREE.MultiplyBlending, toneMapped: false, transparent: true
@@ -67,8 +68,8 @@ var ARCar = function (param) {
 		carModel.position.z = 0.1
 		scope.add(carModel);
 
-		scope.lr = scope.wheels[0].position.distanceTo(scope.wheels[2].position)/2; // 中心点到后轴距离
-		scope.lf = scope.wheels[0].position.distanceTo(scope.wheels[2].position)/2; // 中心点到前轴距离
+		scope.lr = scope.wheels[0].position.distanceTo(scope.wheels[2].position) / 2; // 中心点到后轴距离
+		scope.lf = scope.wheels[0].position.distanceTo(scope.wheels[2].position) / 2; // 中心点到前轴距离
 	});
 
 	this.lr = 2.5; // 中心点到后轴距离
@@ -84,6 +85,23 @@ var ARCar = function (param) {
 	this.forwardAxis = new THREE.Vector3(0,1,0);
 	this.rightAxis = new THREE.Vector3(1,0,0);
 	this.onBeforeRender = function(car) {};
+	// 用于碰撞检测
+	this.physicalVertices = [
+		new THREE.Vector3(1,2.3,0.1),
+		new THREE.Vector3(-1,2.3,0.1),
+		new THREE.Vector3(1,-2.3,0.1),
+		new THREE.Vector3(-1,-2.3,0.1),
+		new THREE.Vector3(1,2.3,-0.1),
+		new THREE.Vector3(-1,2.3,-0.1),
+		new THREE.Vector3(1,-2.3,-0.1),
+		new THREE.Vector3(-1,-2.3,-0.1)
+	];
+	this.physicalPolygon = [
+		new THREE.Vector3(1,-2.2,0),
+		new THREE.Vector3(-1,-2.2,0),
+		new THREE.Vector3(-1,2.2,0),
+		new THREE.Vector3(1,2.2,0)
+	];
 
 }
 THREE.Object3D.prototype.rotateAroundWorldAxis = function () {

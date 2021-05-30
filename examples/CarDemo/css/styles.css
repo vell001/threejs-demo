@@ -54,11 +54,10 @@ html,body{
 
 #rearview_left{
 	position: fixed;
-
 	left: 0;
 	width: 45%;
 	height: 20%;
-	background: #FF0000;
+	/*background: #FF0000;*/
 }
 
 #rearview_right{
@@ -66,5 +65,17 @@ html,body{
 	width: 45%;
 	height: 20%;
 	right: 0;
+	/*background: #FF0000;*/
+}
+#warning{
+	position: absolute;
+	height: 100px;
+	width: 110px;
+	margin: auto;
+
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 	/*background: #FF0000;*/
 }

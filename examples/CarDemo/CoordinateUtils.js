@@ -33,5 +33,10 @@ function PointSubToVector3(p1, p2) {
 		p1.geometry.coordinates[1]-p2.geometry.coordinates[1],
 		p1.geometry.coordinates[2]-p2.geometry.coordinates[2]);
 }
+function PointSub(p1, p2) {
+	return  turf.point([p1.geometry.coordinates[0]-p2.geometry.coordinates[0],
+		p1.geometry.coordinates[1]-p2.geometry.coordinates[1],
+		p1.geometry.coordinates[2]-p2.geometry.coordinates[2]]);
+}
 
 export {ToMercator, ToLngLat,PointSubToVector3};

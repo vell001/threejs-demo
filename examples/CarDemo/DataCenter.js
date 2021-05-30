@@ -11,16 +11,17 @@ function DataCenter() {
 }
 
 DataCenter.prototype.updateMapData = function (mapDataJson) {
-	// let feature = mapDataJson.features[0];
+	this.originPos = null;
+	this.mapGeoJson = this.toRelativeGeo(mapDataJson);
+	this.mapObjectMeshs = [];
 	let z_index =0;
-	for (let feature of mapDataJson.features) {
+	for (let feature of this.mapGeoJson.features) {
 		let geometry = feature.geometry;
 		let material = feature.properties.material;
 		for (let points of geometry.coordinates) {
 			let geo = [];
 			for (let point of points) {
-				let pos = this.getRelativePos(point);
-				geo.push(pos);
+				geo.push(new THREE.Vector3(point[0],point[1],0));
 			}
 
 			// const pointsGeometry = new THREE.BufferGeometry().setFromPoints(geo);
@@ -36,6 +37,7 @@ DataCenter.prototype.updateMapData = function (mapDataJson) {
 			let polygonGeometry = new THREE.ShapeGeometry(shape);
 			let mesh = new THREE.Mesh(polygonGeometry, this.materials[material]);
 			mesh.position.z = 0.01 * z_index;
+			this.mapObjectMeshs.push(mesh);
 			this.scene.add(mesh);
 			z_index ++;
 			// let slices = Earcut.triangulate(geo,null,3);
@@ -51,6 +53,25 @@ DataCenter.prototype.updateMapData = function (mapDataJson) {
 		}
 	}
 };
+
+DataCenter.prototype.toRelativeGeo = function (mapDataJson) {
+	for (let feature of mapDataJson.features) {
+		let geometry = feature.geometry;
+		let material = feature.properties.material;
+		for (let points of geometry.coordinates) {
+			for (let point of points) {
+				let p1 = turf.toMercator(turf.point(point));
+				if (this.originPos === null) {
+					this.originPos = p1;
+				}
+				let p2 = this.originPos;
+				point[0] = p1.geometry.coordinates[0]-p2.geometry.coordinates[0];
+				point[1] = p1.geometry.coordinates[1]-p2.geometry.coordinates[1];
+			}
+		}
+	}
+	return mapDataJson;
+}
 
 DataCenter.prototype.getRelativePos = function (pos) {
 	let pt = turf.point(pos);
