@@ -27,7 +27,7 @@ CarController.prototype.init = function (car) {
 	{
 	let startX,distance,isDown = false;
 	document.getElementById("wheel").addEventListener("touchstart", function (event) {
-		startX=event.touches[0].clientX;
+		startX=event.targetTouches[0].clientX;
 		isDown = true;
 		event.preventDefault();
 		event.stopPropagation();
@@ -36,11 +36,11 @@ CarController.prototype.init = function (car) {
 		if(!isDown) {
 			return;
 		}
-		distance = event.touches[0].clientX - startX;
+		distance = event.targetTouches[0].clientX - startX;
 		document.getElementById("wheel").style.transform = 'rotate('+distance+'deg)';
 		event.preventDefault();
 		event.stopPropagation();
-		scope.car.wheelYaw = distance/6/180 * Math.PI;
+		scope.car.wheelYaw = distance/3/180 * Math.PI;
 	});
 	document.getElementById("wheel").addEventListener("touchend", function (event) {
 		isDown = false;
@@ -55,7 +55,7 @@ CarController.prototype.init = function (car) {
 	{
 		let startY,distance,t,isDown = false;
 		document.getElementById("throttle").addEventListener("touchstart", function (event) {
-			startY = event.touches[0].clientY;
+			startY = event.targetTouches[0].clientY;
 			t = document.getElementById("throttle").offsetTop;
 			isDown = true;
 			event.preventDefault();
@@ -65,7 +65,7 @@ CarController.prototype.init = function (car) {
 			if(!isDown) {
 				return;
 			}
-			distance = event.touches[0].clientY - startY;
+			distance = event.targetTouches[0].clientY - startY;
 			let ny = t+distance;
 			document.getElementById("throttle").style.top = ny+"px";
 			scope.car.speed = -distance / 30;

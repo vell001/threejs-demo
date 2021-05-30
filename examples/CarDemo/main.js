@@ -31,15 +31,15 @@ function init() {
 	let startX,startY,distanceX,distanceY,isDown,startYaw,startPitch,isDouble,startDistanceDouble,startCameraDistance,distanceDouble;
 	let domDocument = dataCenter.carScene.domElement;
 	domDocument.addEventListener("touchstart", function (event) {
-		if(event.touches.length>=2) {
+		if(event.targetTouches.length>=2) {
 			isDouble = true;
 			startCameraDistance = cameraDistance;
 			startDistanceDouble = Math.sqrt(
-				Math.pow(event.touches[0].clientX - event.touches[1].clientX, 2)
-				+ Math.pow(event.touches[0].clientY - event.touches[1].clientY, 2));
+				Math.pow(event.targetTouches[0].clientX - event.targetTouches[1].clientX, 2)
+				+ Math.pow(event.targetTouches[0].clientY - event.targetTouches[1].clientY, 2));
 		} else {
-			startY = event.touches[0].clientY;
-			startX = event.touches[0].clientX;
+			startY = event.targetTouches[0].clientY;
+			startX = event.targetTouches[0].clientX;
 			startYaw = cameraYawAngle;
 			startPitch = cameraPitchAngle;
 		}
@@ -52,18 +52,18 @@ function init() {
 			return;
 		}
 		if (isDouble) {
-			if (event.touches.length<2) {
+			if (event.targetTouches.length<2) {
 				isDown = false;
 				isDouble = false;
 				return;
 			}
 			distanceDouble = Math.sqrt(
-				Math.pow(event.touches[0].clientX - event.touches[1].clientX, 2)
-				+ Math.pow(event.touches[0].clientY - event.touches[1].clientY, 2));
+				Math.pow(event.targetTouches[0].clientX - event.targetTouches[1].clientX, 2)
+				+ Math.pow(event.targetTouches[0].clientY - event.targetTouches[1].clientY, 2));
 			cameraDistance = startCameraDistance - (distanceDouble - startDistanceDouble) / 10;
 		} else {
-			distanceY = event.touches[0].clientY - startY;
-			distanceX = event.touches[0].clientX - startX;
+			distanceY = event.targetTouches[0].clientY - startY;
+			distanceX = event.targetTouches[0].clientX - startX;
 			cameraYawAngle = startYaw - distanceX / 1000 * Math.PI;
 			cameraPitchAngle = startPitch + distanceY / 1000 * Math.PI;
 		}
