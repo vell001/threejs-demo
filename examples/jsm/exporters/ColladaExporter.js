@@ -102,7 +102,10 @@ ColladaExporter.prototype = {
 
 		var canvas, ctx;
 		function imageToData( image, ext ) {
-
+			console.log(image)
+			if (image === undefined) {
+				return undefined;
+			}
 			canvas = canvas || document.createElement( 'canvas' );
 			ctx = ctx || canvas.getContext( '2d' );
 
@@ -320,7 +323,6 @@ ColladaExporter.prototype = {
 		// Process the given texture into the image library
 		// Returns the image library
 		function processTexture( tex ) {
-
 			var texid = imageMap.get( tex );
 			if ( texid == null ) {
 
@@ -345,6 +347,9 @@ ColladaExporter.prototype = {
 
 				libraryImages.push( imageNode );
 				imageMap.set( tex, texid );
+				console.log(tex);
+				console.log(tex.toJSON());
+				console.log(tex.image);
 				textures.push( {
 					directory: options.textureDirectory,
 					name,
