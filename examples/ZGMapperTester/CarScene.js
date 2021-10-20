@@ -7,9 +7,9 @@ var CarScene = function (domElement) {
 	var scope = this;
 	this.domElement = domElement;
 	this.scene = new THREE.Scene();
-	this.scene.background = new THREE.Color(0xcce0ff);
+	this.scene.background = new THREE.Color(0x3E3E3E);
 	// this.scene.fog = new THREE.Fog( 0xcce0ff, 60, 10000 );
-	this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+	this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 10000);
 	// Move the camera to 0,0,-5 (the Y axis is "up")
 	this.camera.position.set(0, 0, 200);
 
@@ -18,9 +18,9 @@ var CarScene = function (domElement) {
 
 	// lights
 
-	this.scene.add(new THREE.AmbientLight(0x666666));
+	this.scene.add(new THREE.AmbientLight(0xFFFFFF));
 
-	const light = new THREE.DirectionalLight(0xdfebff, 1);
+	const light = new THREE.DirectionalLight(0xFFFFFF, 1);
 	light.position.set(50, 100, 200);
 	light.position.multiplyScalar(1.3);
 
