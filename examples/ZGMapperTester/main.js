@@ -91,17 +91,22 @@ function init() {
 			console.log("load_map_data", json);
 			let ref_gps_pos = document.getElementById("ref_gps_pos").value;
 			let originPos = null;
-			if (ref_gps_pos) {
-				let pt = turf.point(JSON.parse(ref_gps_pos));
-				originPos = turf.toMercator(pt);
+			try {
+				if (ref_gps_pos) {
+					let pt = turf.point(JSON.parse(ref_gps_pos));
+					originPos = turf.toMercator(pt);
+				}
+			} catch (e) {
+				console.log(e);
+				alert("原点坐标格式不对，默认使用数据第一个坐标点作为原点");
 			}
-			console.log(originPos);
+			console.log("originPos: ", originPos);
 			DataCenter.getInstance().updateZGMapData(json, originPos);
 		}
 		reader.readAsText(this.files[0]);
 	});
 	document.getElementById("clear_scene").onclick = function () {
-		location.reload();
+		DataCenter.getInstance().clearScene();
 	}
 	document.getElementById("export_scene").onclick = function () {
 

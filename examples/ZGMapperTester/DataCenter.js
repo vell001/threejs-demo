@@ -203,9 +203,13 @@ DataCenter.prototype.updateZGMapData = function (mapDataJson,originPos) {
 			}
 		}
 	}
+
 	document.getElementById("ref_gps_pos").value = JSON.stringify(turf.toWgs84(this.originPos).geometry.coordinates);
 }
 
+DataCenter.prototype.clearScene = function () {
+	this.scene.clear();
+}
 DataCenter.prototype.updateMapData = function (mapDataJson) {
 	this.originPos = null;
 	this.mapGeoJson = this.toRelativeGeo(mapDataJson);
