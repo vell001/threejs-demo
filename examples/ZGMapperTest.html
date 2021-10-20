@@ -12,13 +12,15 @@
 <body>
 <div id="scene_3d" class="scene_3d"></div>
 
-<div id="rearview_left"></div>
-<div id="rearview_right"></div>
+<!--<div id="rearview_left"></div>-->
+<!--<div id="rearview_right"></div>-->
 
-<img id="wheel" src="ZGMapperTester/img/wheel.png"/>
-<img id="throttle" src="ZGMapperTester/img/throttle.png"/>
+<img id="wheel" src="ZGMapperTester/img/wheel.png" style="visibility: hidden;"/>
+<img id="throttle" src="ZGMapperTester/img/throttle.png" style="visibility: hidden;"/>
 <!--<img id="warning" src="ZGMapperTester/img/warning.png"/>-->
-<div id="export_scene">导出数据</div>
+<button id="export_scene">导出模型</button>
+<button id="clear_scene">清除模型</button>
+<input type="file" id="load_map_data"/>
 <!--	<img id="brake" src="ZGMapperTester/img/brake.png"/>-->
 </body>
 </html>

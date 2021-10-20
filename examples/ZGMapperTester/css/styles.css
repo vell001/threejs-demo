@@ -84,6 +84,22 @@ html,body{
 	float: right;
 	bottom: 40px;
 	right: 80px;
-	height: 50px;
+	height: 30px;
 	width: 80px;
+}
+#clear_scene{
+	position: fixed;
+	float: right;
+	bottom: 40px;
+	right: 180px;
+	height: 30px;
+	width: 80px;
+}
+#load_map_data{
+	position: fixed;
+	float: right;
+	bottom: 80px;
+	right: 80px;
+	height: 30px;
+	width: 180px;
 }

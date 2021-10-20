@@ -1,6 +1,6 @@
 import * as THREE from '../../build/three.module.js';
-import { OrbitControls } from '../jsm/controls/OrbitControls.js';
-import { RoomEnvironment } from '../jsm/environments/RoomEnvironment.js';
+import {OrbitControls} from '../jsm/controls/OrbitControls.js';
+import {RoomEnvironment} from '../jsm/environments/RoomEnvironment.js';
 import {Sky} from "../jsm/objects/Sky.js";
 
 var CarScene = function (domElement) {
@@ -18,11 +18,11 @@ var CarScene = function (domElement) {
 
 	// lights
 
-	this.scene.add( new THREE.AmbientLight( 0x666666 ) );
+	this.scene.add(new THREE.AmbientLight(0x666666));
 
-	const light = new THREE.DirectionalLight( 0xdfebff, 1 );
-	light.position.set( 50, 100, 200 );
-	light.position.multiplyScalar( 1.3 );
+	const light = new THREE.DirectionalLight(0xdfebff, 1);
+	light.position.set(50, 100, 200);
+	light.position.multiplyScalar(1.3);
 
 	light.castShadow = true;
 
@@ -31,17 +31,17 @@ var CarScene = function (domElement) {
 
 	const d = 300;
 
-	light.shadow.camera.left = - d;
+	light.shadow.camera.left = -d;
 	light.shadow.camera.right = d;
 	light.shadow.camera.top = d;
-	light.shadow.camera.bottom = - d;
+	light.shadow.camera.bottom = -d;
 
 	light.shadow.camera.far = 10000;
 
-	this.scene.add( light );
+	this.scene.add(light);
 
 	// Creates the renderer with size 1280x720
-	this.renderer = new THREE.WebGLRenderer({ antialias: true });
+	this.renderer = new THREE.WebGLRenderer({antialias: true});
 	this.renderer.setPixelRatio(window.devicePixelRatio);
 	this.renderer.setSize(window.innerWidth, window.innerHeight);
 	this.renderer.outputEncoding = THREE.sRGBEncoding;
@@ -50,35 +50,37 @@ var CarScene = function (domElement) {
 
 	this.rearviewDomLeft = document.getElementById("rearview_left");
 	this.rearviewDomRight = document.getElementById("rearview_right");
-	this.rearviewCameraLeft = new THREE.PerspectiveCamera(60, this.rearviewDomLeft.clientWidth / this.rearviewDomLeft.clientHeight, 0.1, 1000);
-	this.rearviewCameraRight = new THREE.PerspectiveCamera(60, this.rearviewDomRight.clientWidth / this.rearviewDomRight.clientHeight, 0.1, 1000);
+	if (this.rearviewDomLeft) {
+		this.rearviewCameraLeft = new THREE.PerspectiveCamera(60, this.rearviewDomLeft.clientWidth / this.rearviewDomLeft.clientHeight, 0.1, 1000);
+		this.rearviewCameraRight = new THREE.PerspectiveCamera(60, this.rearviewDomRight.clientWidth / this.rearviewDomRight.clientHeight, 0.1, 1000);
 
-	this.rearviewRendererLeft = new THREE.WebGLRenderer({ antialias: true });
-	this.rearviewRendererLeft.setPixelRatio(window.devicePixelRatio);
-	this.rearviewRendererLeft.outputEncoding = THREE.sRGBEncoding;
-	this.rearviewRendererLeft.toneMapping = THREE.ACESFilmicToneMapping;
-	this.rearviewRendererLeft.toneMappingExposure = 0.85;
+		this.rearviewRendererLeft = new THREE.WebGLRenderer({antialias: true});
+		this.rearviewRendererLeft.setPixelRatio(window.devicePixelRatio);
+		this.rearviewRendererLeft.outputEncoding = THREE.sRGBEncoding;
+		this.rearviewRendererLeft.toneMapping = THREE.ACESFilmicToneMapping;
+		this.rearviewRendererLeft.toneMappingExposure = 0.85;
 
-	this.rearviewRendererRight = new THREE.WebGLRenderer({ antialias: true });
-	this.rearviewRendererRight.setPixelRatio(window.devicePixelRatio);
-	this.rearviewRendererRight.outputEncoding = THREE.sRGBEncoding;
-	this.rearviewRendererRight.toneMapping = THREE.ACESFilmicToneMapping;
-	this.rearviewRendererRight.toneMappingExposure = 0.85;
+		this.rearviewRendererRight = new THREE.WebGLRenderer({antialias: true});
+		this.rearviewRendererRight.setPixelRatio(window.devicePixelRatio);
+		this.rearviewRendererRight.outputEncoding = THREE.sRGBEncoding;
+		this.rearviewRendererRight.toneMapping = THREE.ACESFilmicToneMapping;
+		this.rearviewRendererRight.toneMappingExposure = 0.85;
 
-	this.rearviewRendererLeft.setSize(this.rearviewDomLeft.clientWidth , this.rearviewDomLeft.clientHeight);
-	this.rearviewRendererRight.setSize(this.rearviewDomRight.clientWidth , this.rearviewDomRight.clientHeight);
-	this.rearviewRendererLeft.setAnimationLoop(function() {
-		scope.rearviewRendererLeft.render(scope.scene, scope.rearviewCameraLeft);
-	});
-	this.rearviewRendererRight.setAnimationLoop(function() {
-		scope.rearviewRendererRight.render(scope.scene, scope.rearviewCameraRight);
-	});
-	this.rearviewDomLeft.appendChild(this.rearviewRendererLeft.domElement);
-	this.rearviewDomRight.appendChild(this.rearviewRendererRight.domElement);
-
+		this.rearviewRendererLeft.setSize(this.rearviewDomLeft.clientWidth, this.rearviewDomLeft.clientHeight);
+		this.rearviewRendererRight.setSize(this.rearviewDomRight.clientWidth, this.rearviewDomRight.clientHeight);
+		this.rearviewRendererLeft.setAnimationLoop(function () {
+			scope.rearviewRendererLeft.render(scope.scene, scope.rearviewCameraLeft);
+		});
+		this.rearviewRendererRight.setAnimationLoop(function () {
+			scope.rearviewRendererRight.render(scope.scene, scope.rearviewCameraRight);
+		});
+		this.rearviewDomLeft.appendChild(this.rearviewRendererLeft.domElement);
+		this.rearviewDomRight.appendChild(this.rearviewRendererRight.domElement);
+	}
 	// 渲染前刷新元素信息
-	this.updateView = function() {};
-	this.renderer.setAnimationLoop(function() {
+	this.updateView = function () {
+	};
+	this.renderer.setAnimationLoop(function () {
 		scope.updateView();
 		scope.renderer.render(scope.scene, scope.camera);
 	});
@@ -139,21 +141,23 @@ var CarScene = function (domElement) {
 	// this.controls.target.set(0, 0.5, 0);
 	// this.controls.update();
 
-	var onWindowResize = function() {
+	var onWindowResize = function () {
 		scope.camera.aspect = window.innerWidth / window.innerHeight;
 		scope.camera.updateProjectionMatrix();
 
 		scope.renderer.setSize(window.innerWidth, window.innerHeight);
 
-		scope.rearviewCameraLeft.aspect = scope.rearviewDomLeft.clientWidth / scope.rearviewDomLeft.clientHeight;
-		scope.rearviewCameraLeft.updateProjectionMatrix();
-		scope.rearviewCameraRight.aspect = scope.rearviewDomRight.clientWidth / scope.rearviewDomRight.clientHeight;
-		scope.rearviewCameraRight.updateProjectionMatrix();
-		scope.rearviewRendererLeft.setSize(scope.rearviewDomLeft.clientWidth , scope.rearviewDomLeft.clientHeight);
-		scope.rearviewRendererRight.setSize(scope.rearviewDomRight.clientWidth , scope.rearviewDomRight.clientHeight);
+		if (scope.rearviewDomLeft) {
+			scope.rearviewCameraLeft.aspect = scope.rearviewDomLeft.clientWidth / scope.rearviewDomLeft.clientHeight;
+			scope.rearviewCameraLeft.updateProjectionMatrix();
+			scope.rearviewCameraRight.aspect = scope.rearviewDomRight.clientWidth / scope.rearviewDomRight.clientHeight;
+			scope.rearviewCameraRight.updateProjectionMatrix();
+			scope.rearviewRendererLeft.setSize(scope.rearviewDomLeft.clientWidth, scope.rearviewDomLeft.clientHeight);
+			scope.rearviewRendererRight.setSize(scope.rearviewDomRight.clientWidth, scope.rearviewDomRight.clientHeight);
+		}
 	};
 	window.addEventListener('resize', onWindowResize);
 }
 CarScene.prototype.constructor = CarScene;
 
-export { CarScene };
+export {CarScene};
