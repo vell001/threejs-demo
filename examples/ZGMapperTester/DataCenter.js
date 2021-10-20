@@ -9,14 +9,15 @@ import {GLTFExporter} from "../jsm/exporters/GLTFExporter.js";
 function DataCenter() {
 	this.instance = null;
 	this.originPos = null;
+
+	this.lineWidth = 0.15;
+	this.lineWidthHalf = this.lineWidth / 2;
+	this.lineHeight = 0.01;
 }
 
 DataCenter.prototype.genLineBoxMesh = function (v1, v2) {
-	let lineWidthHalf = 0.15 / 2;
-	let lineHeight = 0.01;
-
 	let dist = v1.distanceTo(v2);
-	let cubeGeometry = new THREE.BoxGeometry(0.15, lineHeight, dist);
+	let cubeGeometry = new THREE.BoxGeometry(0.15, this.lineHeight, dist);
 	let mesh = new THREE.Mesh(cubeGeometry, this.materials[this.KEY_line_yellow]);
 	let pos = (v1.add(v2)) .divideScalar(2);
 	mesh.up = new THREE.Vector3(0,0,1);
@@ -28,12 +29,10 @@ DataCenter.prototype.genLineBoxMesh = function (v1, v2) {
 
 DataCenter.prototype.genExtrudeLineMesh = function (v1, v2) {
 	const linePoints = [];
-	let lineWidthHalf = 0.15 / 2;
-	let lineHeight = 0.01;
-	linePoints.push(new THREE.Vector2(0, -lineWidthHalf));
-	linePoints.push(new THREE.Vector2(lineHeight, -lineWidthHalf));
-	linePoints.push(new THREE.Vector2(lineHeight, lineWidthHalf));
-	linePoints.push(new THREE.Vector2(0, lineWidthHalf));
+	linePoints.push(new THREE.Vector2(0, -this.lineWidthHalf));
+	linePoints.push(new THREE.Vector2(this.lineHeight, -this.lineWidthHalf));
+	linePoints.push(new THREE.Vector2(this.lineHeight, this.lineWidthHalf));
+	linePoints.push(new THREE.Vector2(0, this.lineWidthHalf));
 	const lineShape = new THREE.Shape(linePoints);
 	const geometry1 = new THREE.ExtrudeGeometry(lineShape, {
 		steps: 1,
@@ -45,18 +44,15 @@ DataCenter.prototype.genExtrudeLineMesh = function (v1, v2) {
 
 DataCenter.prototype.genLineMergePos = function (pos) {
 	const linePoints = [];
-	let lineWidth = 0.15;
-	let lineWidthHalf = lineWidth / 2;
-	let lineHeight = 0.01;
-	linePoints.push(new THREE.Vector2(-lineWidthHalf, -lineWidthHalf));
-	linePoints.push(new THREE.Vector2(lineWidthHalf, -lineWidthHalf));
-	linePoints.push(new THREE.Vector2(lineWidthHalf, lineWidthHalf));
-	linePoints.push(new THREE.Vector2(-lineWidthHalf, lineWidthHalf));
+	linePoints.push(new THREE.Vector2(-this.lineWidthHalf, -this.lineWidthHalf));
+	linePoints.push(new THREE.Vector2(this.lineWidthHalf, -this.lineWidthHalf));
+	linePoints.push(new THREE.Vector2(this.lineWidthHalf, this.lineWidthHalf));
+	linePoints.push(new THREE.Vector2(-this.lineWidthHalf, this.lineWidthHalf));
 	const lineShape = new THREE.Shape(linePoints);
 	const geometry1 = new THREE.ExtrudeGeometry(lineShape, {
 		steps: 1,
 		bevelEnabled: false,
-		extrudePath: new THREE.LineCurve3(pos, new THREE.Vector3(0, 0, -lineHeight).add(pos))
+		extrudePath: new THREE.LineCurve3(pos, new THREE.Vector3(0, 0, -this.lineHeight).add(pos))
 	});
 	return new THREE.Mesh(geometry1, this.materials[this.KEY_line_yellow]);
 }
