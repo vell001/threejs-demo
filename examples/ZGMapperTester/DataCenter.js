@@ -166,8 +166,8 @@ DataCenter.prototype.genGeometry = function (obj, scene) {
 		scene.add(root);
 	}
 }
-DataCenter.prototype.updateZGMapData = function (mapDataJson) {
-	this.originPos = null;
+DataCenter.prototype.updateZGMapData = function (mapDataJson,originPos) {
+	this.originPos = originPos;
 	for (let project of mapDataJson.projects) {
 		if (project.type === "ReverseParkingProject") {
 			let geo_local = this.getRelativePosList(project.std_points);
@@ -203,6 +203,7 @@ DataCenter.prototype.updateZGMapData = function (mapDataJson) {
 			}
 		}
 	}
+	document.getElementById("ref_gps_pos").value = JSON.stringify(turf.toWgs84(this.originPos).geometry.coordinates);
 }
 
 DataCenter.prototype.updateMapData = function (mapDataJson) {

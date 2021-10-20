@@ -89,7 +89,14 @@ function init() {
 		reader.onload = function () {
 			let json = JSON.parse(reader.result);
 			console.log("load_map_data", json);
-			DataCenter.getInstance().updateZGMapData(json);
+			let ref_gps_pos = document.getElementById("ref_gps_pos").value;
+			let originPos = null;
+			if (ref_gps_pos) {
+				let pt = turf.point(JSON.parse(ref_gps_pos));
+				originPos = turf.toMercator(pt);
+			}
+			console.log(originPos);
+			DataCenter.getInstance().updateZGMapData(json, originPos);
 		}
 		reader.readAsText(this.files[0]);
 	});
@@ -106,10 +113,10 @@ function init() {
 		// }, {});
 // Form the file content based on the mesh
 // and geometry within
-	const exporter = new ColladaExporter();
-	let { data, textures } = exporter.parse(dataCenter.scene);
-	let file = new File([data], {type: "text/plain;charset=utf-8"});
-	saveAs(file, new Date().Format("yyyy-MM-dd_HH-mm-ss") + ".dae");
+		const exporter = new ColladaExporter();
+		let {data, textures} = exporter.parse(dataCenter.scene);
+		let file = new File([data], {type: "text/plain;charset=utf-8"});
+		saveAs(file, new Date().Format("yyyy-MM-dd_HH-mm-ss") + ".dae");
 
 // save the files!
 // 	const exporter = new ColladaExporter();
@@ -139,10 +146,11 @@ function loadMapData() {
 		if (request.status === 200) {
 			let json = JSON.parse(request.responseText);
 			console.log(json);
-			DataCenter.getInstance().updateZGMapData(json);
+			DataCenter.getInstance().updateZGMapData(json, null);
 		}
 	}
 }
+
 // 对Date的扩展，将 Date 转化为指定格式的String
 // 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
 // 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
