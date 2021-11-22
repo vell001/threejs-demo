@@ -19,9 +19,9 @@ DataCenter.prototype.genLineBoxMesh = function (v1, v2) {
 	let dist = v1.distanceTo(v2);
 	let cubeGeometry = new THREE.BoxGeometry(0.15, this.lineHeight, dist);
 	let mesh = new THREE.Mesh(cubeGeometry, this.materials[this.KEY_line_yellow]);
-	let pos = (v1.add(v2)) .divideScalar(2);
-	mesh.up = new THREE.Vector3(0,0,1);
-	mesh.position.set(pos.x,pos.y,pos.z);
+	let pos = (v1.add(v2)).divideScalar(2);
+	mesh.up = new THREE.Vector3(0, 0, 1);
+	mesh.position.set(pos.x, pos.y, pos.z);
 	mesh.lookAt(v2);
 	return mesh
 }
@@ -57,42 +57,51 @@ DataCenter.prototype.genLineMergePos = function (pos) {
 	return new THREE.Mesh(geometry1, this.materials[this.KEY_line_yellow]);
 }
 
+// 生成连接点，带方向
+DataCenter.prototype.genLineMergePosWithDir = function (pos, dir) {
+	dir = dir.normalize().multiplyScalar(this.lineWidthHalf);
+	let v1 = pos.clone().sub(dir);
+	let v2 = pos.clone().add(dir);
+	return this.genLineBoxMesh(v1, v2);
+}
+
 DataCenter.prototype.genReverseParking = function (geo, name) {
-	let root = new THREE.Object3D()
+	let root = new THREE.Object3D();
 	for (let i = 1; i < 6; i++) {
 		let mesh = this.genLineBoxMesh(geo[i - 1], geo[i]);
-		mesh.name = "line_" + i + "_" + (i+1);
+		mesh.name = "line_" + i + "_" + (i + 1);
 		root.add(mesh);
-		let merge_mesh = this.genLineMergePos(geo[i]);
+		let merge_mesh = this.genLineMergePosWithDir(geo[i], geo[i].clone().sub(geo[i - 1]));
+		merge_mesh.name = "point_" + i;
 		root.add(merge_mesh);
 	}
 
 	for (let i = 7; i < 8; i++) {
 		let mesh = this.genLineBoxMesh(geo[i - 1], geo[i]);
-		mesh.name = "line_" + i + "_" + (i+1);
+		mesh.name = "line_" + i + "_" + (i + 1);
 		root.add(mesh);
-		// let merge_mesh = this.genLineMergePos(geo[i]);
-		// root.add(merge_mesh);
 	}
 	root.name = name;
 	return root;
 }
 
-DataCenter.prototype.genRightAngledTurn = function (geo, name) {
+DataCenter.prototype.genAngledTurnProject = function (geo, name) {
 	let root = new THREE.Object3D()
 	for (let i = 1; i < 3; i++) {
 		let mesh = this.genLineBoxMesh(geo[i - 1], geo[i]);
-		mesh.name = "line_" + i + "_" + (i+1);
+		mesh.name = "line_" + i + "_" + (i + 1);
 		root.add(mesh);
-		let merge_mesh = this.genLineMergePos(geo[i]);
+		let merge_mesh = this.genLineMergePosWithDir(geo[i], geo[i].clone().sub(geo[i - 1]));
+		merge_mesh.name = "point_" + i;
 		root.add(merge_mesh);
 	}
 
 	for (let i = 4; i < 6; i++) {
 		let mesh = this.genLineBoxMesh(geo[i - 1], geo[i]);
-		mesh.name = "line_" + i + "_" + (i+1);
+		mesh.name = "line_" + i + "_" + (i + 1);
 		root.add(mesh);
-		let merge_mesh = this.genLineMergePos(geo[i]);
+		let merge_mesh = this.genLineMergePosWithDir(geo[i], geo[i].clone().sub(geo[i - 1]));
+		merge_mesh.name = "point_" + i;
 		root.add(merge_mesh);
 	}
 	root.name = name;
@@ -103,15 +112,16 @@ DataCenter.prototype.genSideParking = function (geo, name) {
 	let root = new THREE.Object3D()
 	for (let i = 1; i < 6; i++) {
 		let mesh = this.genLineBoxMesh(geo[i - 1], geo[i]);
-		mesh.name = "line_" + i + "_" + (i+1);
+		mesh.name = "line_" + i + "_" + (i + 1);
 		root.add(mesh);
-		let merge_mesh = this.genLineMergePos(geo[i]);
+		let merge_mesh = this.genLineMergePosWithDir(geo[i], geo[i].clone().sub(geo[i - 1]));
+		merge_mesh.name = "point_" + i;
 		root.add(merge_mesh);
 	}
 
 	for (let i = 7; i < 8; i++) {
 		let mesh = this.genLineBoxMesh(geo[i - 1], geo[i]);
-		mesh.name = "line_" + i + "_" + (i+1);
+		mesh.name = "line_" + i + "_" + (i + 1);
 		root.add(mesh);
 		// let merge_mesh = this.genLineMergePos(geo[i]);
 		// root.add(merge_mesh);
@@ -123,80 +133,126 @@ DataCenter.prototype.genSideParking = function (geo, name) {
 DataCenter.prototype.genHillStartProject = function (geo, name) {
 	let root = new THREE.Object3D()
 	let mesh = this.genLineBoxMesh(geo[0], geo[2]);
-	mesh.name = "line_" + 1 + "_" + 3;
+	mesh.name = "line_1_3";
 	root.add(mesh);
-	let merge_mesh = this.genLineMergePos(geo[2]);
+	let merge_mesh = this.genLineMergePosWithDir(geo[2], geo[2].clone().sub(geo[0]));
+	merge_mesh.name = "point_3";
 	root.add(merge_mesh);
 
 	for (let i = 2; i < 5; i++) {
 		let mesh = this.genLineBoxMesh(geo[i - 1], geo[i]);
-		mesh.name = "line_" + i + "_" + (i+1);
+		mesh.name = "line_" + i + "_" + (i + 1);
 		root.add(mesh);
-		let merge_mesh = this.genLineMergePos(geo[i]);
+		let merge_mesh = this.genLineMergePosWithDir(geo[i], geo[i].clone().sub(geo[i - 1]));
+		merge_mesh.name = "point_" + i;
 		root.add(merge_mesh);
 	}
 	root.name = name;
 	return root;
 }
 
-DataCenter.prototype.genGeometry = function (obj, scene) {
-	if (obj.type === "CurveDrivingProject" || obj.type === "GeometryCollection" ) {
+// 生成线段
+DataCenter.prototype.genLineGeometry = function (geo_local, withMergeMesh) {
+	let root = new THREE.Object3D();
+	for (let i = 1; i < geo_local.length; i++) {
+		let mesh = this.genLineBoxMesh(geo_local[i - 1], geo_local[i]);
+		mesh.name = "line_" + i + "_" + (i + 1);
+		root.add(mesh);
+		if (withMergeMesh) {
+			let merge_mesh = this.genLineMergePosWithDir(geo_local[i], geo_local[i].clone().sub(geo_local[i - 1]));
+			merge_mesh.name = "point_" + i;
+			root.add(merge_mesh);
+		}
+	}
+	return root;
+}
+
+DataCenter.prototype.genGeometry = function (obj, parent, withMergeMesh) {
+	if (obj.type === "GeometryCollection") {
 		for (let subObj of obj.geometries) {
-			this.genGeometry(subObj, this.scene);
+			this.genGeometry(subObj, parent, withMergeMesh);
 		}
 	} else if (obj.type === "Line" || obj.type === "Polygon") {
-		let root = new THREE.Object3D()
 		if (obj.coordinates === undefined) {
 			return
 		}
-		let geo_local = this.getRelativePosList(obj.coordinates);
-		for (let i = 1; i < geo_local.length; i++) {
-			let mesh = this.genLineBoxMesh(geo_local[i - 1], geo_local[i]);
-			mesh.name = "line_" + i + "_" + (i+1);
-			root.add(mesh);
-			let merge_mesh = this.genLineMergePos(geo_local[i]);
-			root.add(merge_mesh);
-		}
+		let root = this.genLineGeometry(this.getRelativePosList(obj.coordinates), withMergeMesh);
 
-		root.name = obj.name;
-		scene.add(root);
+		root.name = obj.id;
+		parent.add(root);
 	}
 }
-DataCenter.prototype.updateZGMapData = function (mapDataJson,originPos) {
+DataCenter.prototype.genGeometries = function (geometries, parent, withMergeMesh) {
+	if (geometries != null && geometries.length > 0) {
+		let geometriesObj = new THREE.Object3D();
+		geometriesObj.name = "geometries";
+		for (let obj of geometries) {
+			this.genGeometry(obj, geometriesObj, withMergeMesh);
+		}
+		parent.add(geometriesObj);
+	}
+}
+
+DataCenter.prototype.updateZGMapData = function (mapDataJson, originPos) {
 	this.originPos = originPos;
 	for (let project of mapDataJson.projects) {
 		if (project.type === "ReverseParkingProject") {
+			let projectObj = new THREE.Object3D();
+			projectObj.name = project.id;
 			let geo_local = this.getRelativePosList(project.std_points);
-			let mesh = this.genReverseParking(geo_local, project.name);
-			this.scene.add(mesh);
-			for (let obj of project.geometries) {
-				this.genGeometry(obj, this.scene);
-			}
+			let mesh = this.genReverseParking(geo_local, "std_points");
+			projectObj.add(mesh);
+
+			this.genGeometries(project.geometries, projectObj, false);
+			this.scene.add(projectObj);
 		} else if (project.type === "SideParkingProject") {
+			let projectObj = new THREE.Object3D();
+			projectObj.name = project.id;
 			let geo_local = this.getRelativePosList(project.std_points);
-			let mesh = this.genSideParking(geo_local, project.name);
-			this.scene.add(mesh);
-			for (let obj of project.geometries) {
-				this.genGeometry(obj, this.scene);
-			}
+			let mesh = this.genSideParking(geo_local, "std_points");
+			projectObj.add(mesh);
+
+			this.genGeometries(project.geometries, projectObj, false);
+
+			this.scene.add(projectObj);
 		} else if (project.type === "HillStartProject") {
+			let projectObj = new THREE.Object3D();
+			projectObj.name = project.id;
 			let geo_local = this.getRelativePosList(project.std_points);
-			let mesh = this.genHillStartProject(geo_local, project.name);
-			this.scene.add(mesh);
-			for (let obj of project.geometries) {
-				this.genGeometry(obj, this.scene);
-			}
-		} else if (project.type === "RightAngledTurn") {
+			let mesh = this.genHillStartProject(geo_local, "std_points");
+			projectObj.add(mesh);
+
+			this.genGeometries(project.geometries, projectObj, false);
+
+			this.scene.add(projectObj);
+		} else if (project.type === "RightAngledTurnProject" || project.type === "LeftAngledTurnProject") {
+			let projectObj = new THREE.Object3D();
+			projectObj.name = project.id;
 			let geo_local = this.getRelativePosList(project.std_points);
-			let mesh = this.genRightAngledTurn(geo_local, project.name);
-			this.scene.add(mesh);
-			for (let obj of project.geometries) {
-				this.genGeometry(obj, this.scene);
+			let mesh = this.genAngledTurnProject(geo_local, "std_points");
+			projectObj.add(mesh);
+
+			this.genGeometries(project.geometries, projectObj, false);
+
+			this.scene.add(projectObj);
+		} else if (project.type === "CurveDrivingProject") {
+			let projectObj = new THREE.Object3D();
+			projectObj.name = project.id;
+
+			for (let obj of project.std_lines) {
+				this.genGeometry(obj, projectObj, true);
 			}
-		} else if (project.type === "CurveDrivingProject" || project.type === "GeometryCollection") {
-			for (let obj of project.geometries) {
-				this.genGeometry(obj, this.scene);
-			}
+
+			this.genGeometries(project.geometries, projectObj, false);
+
+			this.scene.add(projectObj);
+		} else if (project.type === "GeometryCollection") {
+			let projectObj = new THREE.Object3D();
+			projectObj.name = project.id;
+
+			this.genGeometries(project.geometries, projectObj, false);
+
+			this.scene.add(projectObj);
 		}
 	}
 
