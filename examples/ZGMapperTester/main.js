@@ -90,18 +90,17 @@ function init() {
 			let json = JSON.parse(reader.result);
 			console.log("load_map_data", json);
 			let ref_gps_pos = document.getElementById("ref_gps_pos").value;
-			let originPos = null;
+			let originPosWgs84 = null;
 			try {
 				if (ref_gps_pos) {
-					let pt = turf.point(JSON.parse(ref_gps_pos));
-					originPos = turf.toMercator(pt);
+					originPosWgs84= JSON.parse(ref_gps_pos);
 				}
 			} catch (e) {
 				console.log(e);
 				alert("原点坐标格式不对，默认使用数据第一个坐标点作为原点");
 			}
-			console.log("originPos: ", originPos);
-			DataCenter.getInstance().updateZGMapData(json, originPos);
+			console.log("originPos: ", originPosWgs84);
+			DataCenter.getInstance().updateZGMapData(json, originPosWgs84);
 		}
 		reader.readAsText(this.files[0]);
 	});

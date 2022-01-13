@@ -9,6 +9,9 @@ import {GLTFExporter} from "../jsm/exporters/GLTFExporter.js";
 function DataCenter() {
 	this.instance = null;
 	this.originPos = null;
+	this.originPosWgs84 = null;
+	this.mercatorScalar = null;
+	this.ignoreHeight = true;
 
 	this.lineWidth = 0.15;
 	this.lineWidthHalf = this.lineWidth / 2;
@@ -167,72 +170,74 @@ DataCenter.prototype.genLineGeometry = function (geo_local, withMergeMesh) {
 	return root;
 }
 
-DataCenter.prototype.genGeometry = function (obj, parent, withMergeMesh) {
+DataCenter.prototype.genGeometry = function (obj, parent, withMergeMesh, ignoreHeight = false) {
 	if (obj.type === "GeometryCollection") {
 		for (let subObj of obj.geometries) {
-			this.genGeometry(subObj, parent, withMergeMesh);
+			this.genGeometry(subObj, parent, withMergeMesh, ignoreHeight);
 		}
 	} else if (obj.type === "Line" || obj.type === "Polygon") {
 		if (obj.coordinates === undefined) {
 			return
 		}
-		let root = this.genLineGeometry(this.getRelativePosList(obj.coordinates), withMergeMesh);
+		let root = this.genLineGeometry(this.getRelativePosList(obj.coordinates, ignoreHeight), withMergeMesh);
 
 		root.name = obj.id;
 		parent.add(root);
 	}
 }
-DataCenter.prototype.genGeometries = function (geometries, parent, withMergeMesh) {
+DataCenter.prototype.genGeometries = function (geometries, parent, withMergeMesh, ignoreHeight = false) {
 	if (geometries != null && geometries.length > 0) {
 		let geometriesObj = new THREE.Object3D();
 		geometriesObj.name = "geometries";
 		for (let obj of geometries) {
-			this.genGeometry(obj, geometriesObj, withMergeMesh);
+			this.genGeometry(obj, geometriesObj, withMergeMesh, ignoreHeight);
 		}
 		parent.add(geometriesObj);
 	}
 }
 
-DataCenter.prototype.updateZGMapData = function (mapDataJson, originPos) {
-	this.originPos = originPos;
+DataCenter.prototype.updateZGMapData = function (mapDataJson, originPosWgs84) {
+	this.updateOriginPosWgs84(originPosWgs84);
+	this.ignoreHeight = document.getElementById("cb_ignore_height")
+		.getAttribute("checked") === "checked";
 	for (let project of mapDataJson.projects) {
 		if (project.type === "ReverseParkingProject") {
 			let projectObj = new THREE.Object3D();
 			projectObj.name = project.id;
-			let geo_local = this.getRelativePosList(project.std_points);
+			let geo_local = this.getRelativePosList(project.std_points, this.ignoreHeight);
 			let mesh = this.genReverseParking(geo_local, "std_points");
 			projectObj.add(mesh);
 
-			this.genGeometries(project.geometries, projectObj, false);
+			this.genGeometries(project.geometries, projectObj, false, this.ignoreHeight);
 			this.scene.add(projectObj);
 		} else if (project.type === "SideParkingProject") {
 			let projectObj = new THREE.Object3D();
 			projectObj.name = project.id;
-			let geo_local = this.getRelativePosList(project.std_points);
+			let geo_local = this.getRelativePosList(project.std_points, this.ignoreHeight);
 			let mesh = this.genSideParking(geo_local, "std_points");
 			projectObj.add(mesh);
 
-			this.genGeometries(project.geometries, projectObj, false);
+			this.genGeometries(project.geometries, projectObj, false, this.ignoreHeight);
 
 			this.scene.add(projectObj);
 		} else if (project.type === "HillStartProject") {
 			let projectObj = new THREE.Object3D();
 			projectObj.name = project.id;
-			let geo_local = this.getRelativePosList(project.std_points);
+			let geo_local = this.getRelativePosList(project.std_points, false);
 			let mesh = this.genHillStartProject(geo_local, "std_points");
 			projectObj.add(mesh);
 
-			this.genGeometries(project.geometries, projectObj, false);
+			this.genGeometries(project.geometries, projectObj, false, false);
 
 			this.scene.add(projectObj);
 		} else if (project.type === "RightAngledTurnProject" || project.type === "LeftAngledTurnProject") {
 			let projectObj = new THREE.Object3D();
 			projectObj.name = project.id;
-			let geo_local = this.getRelativePosList(project.std_points);
+			let geo_local = this.getRelativePosList(project.std_points, this.ignoreHeight);
 			let mesh = this.genAngledTurnProject(geo_local, "std_points");
 			projectObj.add(mesh);
 
-			this.genGeometries(project.geometries, projectObj, false);
+			this.genGeometries(project.geometries, projectObj, false, this.ignoreHeight);
 
 			this.scene.add(projectObj);
 		} else if (project.type === "CurveDrivingProject") {
@@ -240,145 +245,69 @@ DataCenter.prototype.updateZGMapData = function (mapDataJson, originPos) {
 			projectObj.name = project.id;
 
 			for (let obj of project.std_lines) {
-				this.genGeometry(obj, projectObj, true);
+				this.genGeometry(obj, projectObj, true, this.ignoreHeight);
 			}
 
-			this.genGeometries(project.geometries, projectObj, false);
+			this.genGeometries(project.geometries, projectObj, false, this.ignoreHeight);
 
 			this.scene.add(projectObj);
 		} else if (project.type === "GeometryCollection") {
 			let projectObj = new THREE.Object3D();
 			projectObj.name = project.id;
 
-			this.genGeometries(project.geometries, projectObj, false);
+			this.genGeometries(project.geometries, projectObj, false, this.ignoreHeight);
 
 			this.scene.add(projectObj);
 		}
 	}
 
-	document.getElementById("ref_gps_pos").value = JSON.stringify(turf.toWgs84(this.originPos).geometry.coordinates);
+	document.getElementById("ref_gps_pos").value = JSON.stringify(this.originPosWgs84);
 }
 
 DataCenter.prototype.clearScene = function () {
 	this.scene.clear();
 }
-DataCenter.prototype.updateMapData = function (mapDataJson) {
-	this.originPos = null;
-	this.mapGeoJson = this.toRelativeGeo(mapDataJson);
-	this.mapObjectMeshs = [];
-	let z_index = 0;
-	let mesh_idx = 0;
-	for (let feature of this.mapGeoJson.features) {
-		let geometry = feature.geometry;
-		let material = feature.properties.material;
-		for (let points of geometry.coordinates) {
-			let geo = [];
-			// for (let point of points) {
-			// 	geo.push(new THREE.Vector3(point[0], point[1], 0));
-			// }
 
-			/*  //生成标准库位
-			geo.push(new THREE.Vector3(0,5.25,0));
-			geo.push(new THREE.Vector3(6.82,5.25,0));
-			geo.push(new THREE.Vector3(6.82,0,0));
-			geo.push(new THREE.Vector3(6.82+2.31,0,0));
-			geo.push(new THREE.Vector3(6.82+2.31,5.25,0));
-			geo.push(new THREE.Vector3(6.82+2.31+6.82,5.25,0));
-			geo.push(new THREE.Vector3(6.82+2.31+6.82,5.25+6.82,0));
-			geo.push(new THREE.Vector3(0,5.25+6.82,0));
-			*/
-
-			// const pointsGeometry = new THREE.BufferGeometry().setFromPoints(geo);
-			// const points_ = new THREE.Points(pointsGeometry, this.materials[this.KEY_point]);
-			// this.scene.add(points_);
-
-			// 生成面
-			/*let shape = new THREE.Shape();
-			shape.moveTo(geo[0].x, geo[0].y);
-			for (let i = 0; i < geo.length; i++) {
-				shape.lineTo(geo[i].x, geo[i].y);
-			}
-			shape.autoClose = true;
-			let polygonGeometry = new THREE.ShapeGeometry(shape);
-			let mesh = new THREE.Mesh(polygonGeometry, this.materials[material]);
-			mesh.position.z = 0.01 * z_index;
-			this.mapObjectMeshs.push(mesh);
-			mesh.name = "mesh_" + mesh_idx;
-			mesh_idx ++;
-			this.scene.add(mesh);
-			z_index ++;*/
-
-			// 生成车道线实体
-			// const closedSpline = new THREE.CatmullRomCurve3(geo);
-			// closedSpline.curveType = 'catmullrom';
-			// closedSpline.closed = true;
-			// const extrudeSettings1 = {
-			// 	steps: 1000,
-			// 	bevelEnabled: false,
-			// 	extrudePath: closedSpline
-			// };
-			// const pts1 = [];
-			// pts1.push(new THREE.Vector2(0, 0));
-			// pts1.push(new THREE.Vector2(0.01, 0));
-			// pts1.push(new THREE.Vector2(0.01, 0.15));
-			// pts1.push(new THREE.Vector2(0, 0.15));
-			//
-			// const shape1 = new THREE.Shape(pts1);
-			// const geometry1 = new THREE.ExtrudeGeometry(shape1, extrudeSettings1);
-			// const mesh = new THREE.Mesh(geometry1, this.materials[this.KEY_line_yellow]);
-
-			let mesh = this.genReverseParking(geo);
-			// mesh.name = "mesh_" + mesh_idx;
-			// mesh_idx++;
-			this.scene.add(mesh);
-
-			// let slices = Earcut.triangulate(geo,null,3);
-			// let convexGeometry = new THREE.PolyhedronGeometry( points,slices,6,2 );
-			// let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-			// let mesh = new THREE.Mesh( convexGeometry, material );
-			// this.scene.add(mesh);
-
-			// let convexGeometry = new ConvexGeometry( geo );
-			// let material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-			// let mesh = new THREE.Mesh( convexGeometry, material );
-			// this.scene.add(mesh);
-		}
-	}
-};
-
-DataCenter.prototype.toRelativeGeo = function (mapDataJson) {
-	for (let feature of mapDataJson.features) {
-		let geometry = feature.geometry;
-		let material = feature.properties.material;
-		for (let points of geometry.coordinates) {
-			for (let point of points) {
-				let p1 = turf.toMercator(turf.point(point));
-				if (this.originPos === null) {
-					this.originPos = p1;
-				}
-				let p2 = this.originPos;
-				point[0] = p1.geometry.coordinates[0] - p2.geometry.coordinates[0];
-				point[1] = p1.geometry.coordinates[1] - p2.geometry.coordinates[1];
-			}
-		}
-	}
-	return mapDataJson;
+function WGS84ToMercator(point) {
+	let xValue = point[0] * 20037508.34 / 180;
+	let y = Math.log(Math.tan((90 + point[1]) * Math.PI / 360)) / (Math.PI / 180);
+	let yValue = y * 20037508.34 / 180;
+	return [xValue, yValue, point[2]];
 }
 
-DataCenter.prototype.getRelativePosList = function (points) {
+DataCenter.prototype.updateOriginPosWgs84 = function (originPosWgs84) {
+	if (originPosWgs84 === null) {
+		this.originPosWgs84 = null;
+		this.originPos = 0;
+		this.mercatorScalar = 0;
+	} else {
+		this.originPosWgs84 = [originPosWgs84[0], originPosWgs84[1], originPosWgs84[2]];
+		this.originPos = WGS84ToMercator(this.originPosWgs84);
+		this.mercatorScalar = Math.cos(this.originPosWgs84[1] / 180 * Math.PI);
+	}
+}
+
+DataCenter.prototype.getRelativePosList = function (points, ignoreHeight = false) {
 	let ret = [];
 	for (let pos of points) {
-		ret.push(this.getRelativePos(pos));
+		ret.push(this.getRelativePos(pos, ignoreHeight));
 	}
 	return ret;
 }
-DataCenter.prototype.getRelativePos = function (pos) {
-	let pt = turf.point(pos);
-	let p = turf.toMercator(pt);
-	if (this.originPos === null) {
-		this.originPos = p;
+
+DataCenter.prototype.getRelativePos = function (point, ignoreHeight) {
+	let mercator = WGS84ToMercator(point);
+	if (this.originPosWgs84 === null) {
+		this.updateOriginPosWgs84(point);
 	}
-	return PointSubToVector3(p, this.originPos);
+
+	let x = (mercator[0] - this.originPos[0]) * this.mercatorScalar;
+	let y = (mercator[1] - this.originPos[1]) * this.mercatorScalar;
+	let z = 0;
+	if (!ignoreHeight) {
+		z = mercator[2] - this.originPos[2];
+	}
+	return new THREE.Vector3(x, y, z);
 }
 
 DataCenter.prototype.init = function () {
