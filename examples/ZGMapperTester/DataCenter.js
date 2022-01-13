@@ -18,9 +18,9 @@ function DataCenter() {
 	this.lineHeight = 0.01;
 }
 
-DataCenter.prototype.genLineBoxMesh = function (v1, v2) {
+DataCenter.prototype.genLineBoxMesh = function (v1, v2, width = 0.15) {
 	let dist = v1.distanceTo(v2);
-	let cubeGeometry = new THREE.BoxGeometry(0.15, this.lineHeight, dist);
+	let cubeGeometry = new THREE.BoxGeometry(width, this.lineHeight, dist);
 	let mesh = new THREE.Mesh(cubeGeometry, this.materials[this.KEY_line_yellow]);
 	let pos = (v1.add(v2)).divideScalar(2);
 	mesh.up = new THREE.Vector3(0, 0, 1);
@@ -142,7 +142,11 @@ DataCenter.prototype.genHillStartProject = function (geo, name) {
 	merge_mesh.name = "point_3";
 	root.add(merge_mesh);
 
-	for (let i = 2; i < 5; i++) {
+	// 停车线宽30cm
+	mesh = this.genLineBoxMesh(geo[1], geo[2], 0.3);
+	mesh.name = "line_2_3";
+	root.add(mesh);
+	for (let i = 3; i < 5; i++) {
 		let mesh = this.genLineBoxMesh(geo[i - 1], geo[i]);
 		mesh.name = "line_" + i + "_" + (i + 1);
 		root.add(mesh);
