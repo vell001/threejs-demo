@@ -176,9 +176,15 @@ DataCenter.prototype.genLineGeometry = function (geo_local, withMergeMesh) {
 
 DataCenter.prototype.genGeometry = function (obj, parent, withMergeMesh, ignoreHeight = false) {
 	if (obj.type === "GeometryCollection") {
-		for (let subObj of obj.geometries) {
-			this.genGeometry(subObj, parent, withMergeMesh, ignoreHeight);
+		let node = new THREE.Object3D();
+		node.name += "label";
+		for (let label of obj.label) {
+			node.name +=  "_" + label;
 		}
+		for (let subObj of obj.geometries) {
+			this.genGeometry(subObj, node, withMergeMesh, ignoreHeight);
+		}
+		parent.add(node);
 	} else if (obj.type === "Line" || obj.type === "Polygon") {
 		if (obj.coordinates === undefined) {
 			return
