@@ -327,7 +327,7 @@ DataCenter.prototype.genGround = function (projects) {
 				extrudePath: new THREE.LineCurve3(base_point.clone().add(base_point.clone().sub(to_point).normalize().setLength(0.4)),
 					to_point.add(to_point.clone().sub(base_point).normalize().setLength(0.4)))
 			});
-			const material = new THREE.MeshBasicMaterial({color: 0x0000ff});
+			const material = new THREE.MeshBasicMaterial({color: 0x000000});
 			ground.add(new THREE.Mesh(geometry1, material));
 		}
 	}
