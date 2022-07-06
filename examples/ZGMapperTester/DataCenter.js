@@ -5,6 +5,7 @@ import {PointSubToVector3} from "./CoordinateUtils.js";
 import {saveAs} from "./FileSaver.js";
 import {ColladaExporter} from "../jsm/exporters/ColladaExporter.js";
 import {GLTFExporter} from "../jsm/exporters/GLTFExporter.js";
+import {Vector3} from "../../build/three.module.js";
 
 function DataCenter() {
 	this.instance = null;
@@ -206,6 +207,133 @@ DataCenter.prototype.genGeometries = function (geometries, parent, withMergeMesh
 	}
 }
 
+DataCenter.prototype.findEdgePoint = function (objs, leftTopPoint, rightBottomPoint) {
+	try {
+		for (let obj of objs) {
+			if ("coordinates" in obj) {
+				for (let p of obj.coordinates) {
+					let pp = this.getRelativePos(p, true);
+					if (leftTopPoint === undefined) {
+						leftTopPoint = pp.clone();
+					} else if (pp.x < leftTopPoint.x) {
+						leftTopPoint.x = pp.x;
+					} else if (pp.y > leftTopPoint.y) {
+						leftTopPoint.y = pp.y;
+					}
+					if (rightBottomPoint === undefined) {
+						rightBottomPoint = pp.clone();
+					} else if (pp.x > rightBottomPoint.x) {
+						rightBottomPoint.x = pp.x;
+					} else if (pp.y < rightBottomPoint.y) {
+						rightBottomPoint.y = pp.y;
+					}
+				}
+			}
+			if ("std_points" in obj) {
+				for (let p of obj.std_points) {
+					let pp = this.getRelativePos(p, true);
+					if (leftTopPoint === undefined) {
+						leftTopPoint = pp.clone();
+					} else if (pp.x < leftTopPoint.x) {
+						leftTopPoint.x = pp.x;
+					} else if (pp.y > leftTopPoint.y) {
+						leftTopPoint.y = pp.y;
+					}
+					if (rightBottomPoint === undefined) {
+						rightBottomPoint = pp.clone();
+					} else if (pp.x > rightBottomPoint.x) {
+						rightBottomPoint.x = pp.x;
+					} else if (pp.y < rightBottomPoint.y) {
+						rightBottomPoint.y = pp.y;
+					}
+				}
+			}
+			if ("std_lines" in obj) {
+				let edge = this.findEdgePoint(obj.std_lines, leftTopPoint, rightBottomPoint);
+				leftTopPoint = edge[0].clone();
+				rightBottomPoint = edge[1].clone();
+			}
+			let edge = this.findEdgePoint(obj, leftTopPoint, rightBottomPoint);
+			leftTopPoint = edge[0].clone();
+			rightBottomPoint = edge[1].clone();
+		}
+	} catch (e) {
+	}
+	return [leftTopPoint, rightBottomPoint];
+}
+
+DataCenter.prototype.genExtrudeGeometry = function (shapePoints, depth, color) {
+	const shape = new THREE.Shape();
+
+	shape.moveTo(shapePoints[0].x, shapePoints[0].y);
+	for (let point of shapePoints) {
+		shape.lineTo(point.x, point.y);
+	}
+	const extrudeSettings = {
+		steps: 1,
+		depth: depth,
+		bevelEnabled: false
+	};
+
+	const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+	const material = new THREE.MeshBasicMaterial({color: color});
+	return new THREE.Mesh(geometry, material);
+}
+
+DataCenter.prototype.genGround = function (projects) {
+	let ground = new THREE.Object3D();
+	ground.name = "ground";
+
+	let edgePoints = this.findEdgePoint(projects);
+	edgePoints[0].x -= 10;
+	edgePoints[0].y += 10;
+	edgePoints[1].x += 10;
+	edgePoints[1].y -= 10;
+	let shape = [
+		new THREE.Vector3(edgePoints[0].x, edgePoints[0].y, 0),
+		new THREE.Vector3(edgePoints[1].x, edgePoints[0].y, 0),
+		new THREE.Vector3(edgePoints[1].x, edgePoints[1].y, 0),
+		new THREE.Vector3(edgePoints[0].x, edgePoints[1].y, 0),
+		new THREE.Vector3(edgePoints[0].x, edgePoints[0].y, 0),
+	]
+	let plane = this.genExtrudeGeometry(shape, -0.1, 0x000000);
+	ground.add(plane);
+	for (let project of projects) {
+		if (project.type === "HillStartProject") {
+			let geo_local = this.getRelativePosList(project.std_points, false);
+			let points = [geo_local[0].clone().add(geo_local[0].clone().sub(geo_local[2])),
+				geo_local[2], geo_local[3],
+				geo_local[4].clone().add(geo_local[4].clone().sub(geo_local[3]))];
+			let base_point = points[0];
+			let extrudePoints = [];
+			for (let p of points) {
+				let rp = base_point.clone().sub(p);
+				let x = Math.sqrt(rp.x * rp.x + rp.y * rp.y);
+				let y = rp.z;
+				extrudePoints.push({x: x, y: y});
+			}
+			let to_point = base_point.clone().add(geo_local[1].clone().sub(geo_local[2]));
+
+			const up_plane_shape = new THREE.Shape();
+
+			up_plane_shape.moveTo(extrudePoints[0].x, extrudePoints[0].y);
+			for (let p of extrudePoints) {
+				up_plane_shape.lineTo(p.y, -p.x);
+			}
+			up_plane_shape.lineTo(extrudePoints[0].x, extrudePoints[0].y);
+			const geometry1 = new THREE.ExtrudeGeometry(up_plane_shape, {
+				steps: 1,
+				bevelEnabled: false,
+				extrudePath: new THREE.LineCurve3(base_point.clone().add(base_point.clone().sub(to_point).normalize().setLength(0.4)),
+					to_point.add(to_point.clone().sub(base_point).normalize().setLength(0.4)))
+			});
+			const material = new THREE.MeshBasicMaterial({color: 0x0000ff});
+			ground.add(new THREE.Mesh(geometry1, material));
+		}
+	}
+	return ground;
+}
+
 DataCenter.prototype.updateZGMapData = function (mapDataJson, originPosWgs84) {
 	this.updateOriginPosWgs84(originPosWgs84);
 	this.ignoreHeight = document.getElementById("cb_ignore_height")
@@ -271,6 +399,9 @@ DataCenter.prototype.updateZGMapData = function (mapDataJson, originPosWgs84) {
 		}
 	}
 
+	let ground = this.genGround(mapDataJson.projects);
+	this.scene.add(ground);
+
 	document.getElementById("ref_gps_pos").value = JSON.stringify(this.originPosWgs84);
 }
 
@@ -288,7 +419,7 @@ function WGS84ToMercator(point) {
 
 function WGS84ToRelativePos(point, originPosWgs84) {
 	// point[0] longitude 经度 point[1] latitude 纬度
-	let x = (point[0] - originPosWgs84[0]) * 111319.4889 * Math.cos(point[1]/180*Math.PI);
+	let x = (point[0] - originPosWgs84[0]) * 111319.4889 * Math.cos(point[1] / 180 * Math.PI);
 	let y = (point[1] - originPosWgs84[1]) * 111319.4889;
 	return [x, y, point[2] - originPosWgs84[2]];
 }
