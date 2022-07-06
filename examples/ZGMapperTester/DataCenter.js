@@ -10,7 +10,7 @@ function DataCenter() {
 	this.instance = null;
 	this.originPos = null;
 	this.originPosWgs84 = null;
-	this.mercatorScalar = null;
+	this.latMercatorScalar = null;
 	this.ignoreHeight = true;
 
 	this.lineWidth = 0.15;
@@ -179,7 +179,7 @@ DataCenter.prototype.genGeometry = function (obj, parent, withMergeMesh, ignoreH
 		let node = new THREE.Object3D();
 		node.name += "label";
 		for (let label of obj.label) {
-			node.name +=  "_" + label;
+			node.name += "_" + label;
 		}
 		for (let subObj of obj.geometries) {
 			this.genGeometry(subObj, node, withMergeMesh, ignoreHeight);
@@ -279,21 +279,29 @@ DataCenter.prototype.clearScene = function () {
 }
 
 function WGS84ToMercator(point) {
+	// point[0] longitude 经度 point[1] latitude 纬度
 	let xValue = point[0] * 20037508.34 / 180;
 	let y = Math.log(Math.tan((90 + point[1]) * Math.PI / 360)) / (Math.PI / 180);
 	let yValue = y * 20037508.34 / 180;
-	return [xValue, yValue, point[2]];
+	return [yValue, xValue, point[2]];
+}
+
+function WGS84ToRelativePos(point, originPosWgs84) {
+	// point[0] longitude 经度 point[1] latitude 纬度
+	let x = (point[0] - originPosWgs84[0]) * 111319.4889 * Math.cos(point[1]/180*Math.PI);
+	let y = (point[1] - originPosWgs84[1]) * 111319.4889;
+	return [x, y, point[2] - originPosWgs84[2]];
 }
 
 DataCenter.prototype.updateOriginPosWgs84 = function (originPosWgs84) {
 	if (originPosWgs84 === null) {
 		this.originPosWgs84 = null;
 		this.originPos = 0;
-		this.mercatorScalar = 0;
+		this.latMercatorScalar = 0;
 	} else {
 		this.originPosWgs84 = [originPosWgs84[0], originPosWgs84[1], originPosWgs84[2]];
 		this.originPos = WGS84ToMercator(this.originPosWgs84);
-		this.mercatorScalar = Math.cos(this.originPosWgs84[1] / 180 * Math.PI);
+		this.latMercatorScalar = Math.cos(this.originPosWgs84[1] / 180 * Math.PI);
 	}
 }
 
@@ -306,16 +314,16 @@ DataCenter.prototype.getRelativePosList = function (points, ignoreHeight = false
 }
 
 DataCenter.prototype.getRelativePos = function (point, ignoreHeight) {
-	let mercator = WGS84ToMercator(point);
 	if (this.originPosWgs84 === null) {
 		this.updateOriginPosWgs84(point);
 	}
+	let relativeP = WGS84ToRelativePos(point, this.originPosWgs84);
 
-	let x = (mercator[0] - this.originPos[0]) * this.mercatorScalar;
-	let y = (mercator[1] - this.originPos[1]) * this.mercatorScalar;
+	let x = relativeP[0];
+	let y = relativeP[1];
 	let z = 0;
 	if (!ignoreHeight) {
-		z = mercator[2] - this.originPos[2];
+		z = relativeP[2];
 	}
 	return new THREE.Vector3(x, y, z);
 }

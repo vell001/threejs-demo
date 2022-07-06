@@ -12,6 +12,7 @@ var CarScene = function (domElement) {
 	this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 10000);
 	// Move the camera to 0,0,-5 (the Y axis is "up")
 	this.camera.position.set(0, 0, 200);
+	this.camera.up.set(0, 1, 0);
 
 	// Point the camera to look at 0,0,0
 	this.camera.lookAt(new THREE.Vector3(0, 0, 0));
